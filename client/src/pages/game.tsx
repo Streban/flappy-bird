@@ -351,6 +351,7 @@ export default function Game() {
   const bestScoreRef = useRef(0);
   const lastPipeSpawnRef = useRef(0);
   const animFrameRef = useRef(0);
+  const lastFrameTimeRef = useRef<number | null>(null);
   const scrollXRef = useRef(0);
   const [, setTick] = useState(0);
 
@@ -368,7 +369,8 @@ export default function Game() {
     };
     pipesRef.current = [];
     scoreRef.current = 0;
-    lastPipeSpawnRef.current = Date.now();
+    lastPipeSpawnRef.current = 0;
+    lastFrameTimeRef.current = null;
     scrollXRef.current = 0;
   }, []);
 
@@ -422,19 +424,28 @@ export default function Game() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const gameLoop = () => {
+    const gameLoop = (timestamp: number) => {
+      if (lastFrameTimeRef.current === null) {
+        lastFrameTimeRef.current = timestamp;
+      }
+      const deltaMs = timestamp - lastFrameTimeRef.current;
+      lastFrameTimeRef.current = timestamp;
+      const deltaFactor = Math.min(deltaMs / (1000 / 60), 2);
+
       const bird = birdRef.current;
       const state = gameStateRef.current;
 
       if (state === "playing") {
-        scrollXRef.current += PIPE_SPEED;
+        scrollXRef.current += PIPE_SPEED * deltaFactor;
 
-        bird.velocity += GRAVITY;
+        bird.velocity += GRAVITY * deltaFactor;
         bird.y += bird.velocity;
         bird.rotation = bird.velocity * 0.06;
 
-        const now = Date.now();
-        if (now - lastPipeSpawnRef.current > PIPE_SPAWN_INTERVAL) {
+        if (
+          lastPipeSpawnRef.current === 0 ||
+          timestamp - lastPipeSpawnRef.current > PIPE_SPAWN_INTERVAL
+        ) {
           const minTop = 60;
           const maxTop = CANVAS_HEIGHT - GROUND_HEIGHT - PIPE_GAP - 60;
           const topHeight = minTop + Math.random() * (maxTop - minTop);
@@ -443,11 +454,11 @@ export default function Game() {
             topHeight,
             scored: false,
           });
-          lastPipeSpawnRef.current = now;
+          lastPipeSpawnRef.current = timestamp;
         }
 
         pipesRef.current.forEach((pipe) => {
-          pipe.x -= PIPE_SPEED;
+          pipe.x -= PIPE_SPEED * deltaFactor;
         });
         pipesRef.current = pipesRef.current.filter(
           (p) => p.x > -PIPE_WIDTH - 20
@@ -494,7 +505,7 @@ export default function Game() {
       } else if (state === "idle") {
         bird.y = CANVAS_HEIGHT / 2 + Math.sin(Date.now() * 0.003) * 12;
         bird.rotation = 0;
-        scrollXRef.current += 0.5;
+        scrollXRef.current += 0.5 * deltaFactor;
       }
 
       ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
