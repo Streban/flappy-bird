@@ -109,7 +109,7 @@ function drawBackground(ctx: CanvasRenderingContext2D, scrollX: number) {
   ctx.strokeStyle = "#4AA832";
   ctx.lineWidth = 2;
   for (let i = 0; i < CANVAS_WIDTH + 20; i += 20) {
-    const gx = ((i - (scrollX * 1.5) % 20) + 20) % (CANVAS_WIDTH + 20) - 10;
+    const gx = ((i - ((scrollX * 1.5) % 20) + 20) % (CANVAS_WIDTH + 20)) - 10;
     ctx.beginPath();
     ctx.moveTo(gx, groundY + 12);
     ctx.lineTo(gx + 5, groundY);
@@ -183,12 +183,7 @@ function drawPipe(ctx: CanvasRenderingContext2D, pipe: Pipe) {
   const topPipeBottom = pipe.topHeight;
   const bottomPipeTop = pipe.topHeight + PIPE_GAP;
 
-  const pipeGrad = ctx.createLinearGradient(
-    pipe.x,
-    0,
-    pipe.x + PIPE_WIDTH,
-    0
-  );
+  const pipeGrad = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_WIDTH, 0);
   pipeGrad.addColorStop(0, "#5BBF2A");
   pipeGrad.addColorStop(0.3, "#73D941");
   pipeGrad.addColorStop(0.7, "#73D941");
@@ -225,7 +220,12 @@ function drawPipe(ctx: CanvasRenderingContext2D, pipe: Pipe) {
 
   ctx.fillStyle = "rgba(255,255,255,0.15)";
   ctx.fillRect(pipe.x + 6, 0, 6, topPipeBottom - capHeight);
-  ctx.fillRect(pipe.x + 6, bottomPipeTop + capHeight, 6, groundY - bottomPipeTop - capHeight);
+  ctx.fillRect(
+    pipe.x + 6,
+    bottomPipeTop + capHeight,
+    6,
+    groundY - bottomPipeTop - capHeight
+  );
 }
 
 function drawScore(ctx: CanvasRenderingContext2D, score: number) {
@@ -250,12 +250,6 @@ function drawStartScreen(ctx: CanvasRenderingContext2D) {
   ctx.textAlign = "center";
   ctx.lineWidth = 5;
   ctx.strokeStyle = "rgba(0,0,0,0.6)";
-  ctx.strokeText("Flappy Bird", CANVAS_WIDTH / 2, 180);
-  ctx.fillStyle = "#FFF";
-  ctx.fillText("Flappy Bird", CANVAS_WIDTH / 2, 180);
-
-  ctx.font = "bold 44px 'Open Sans', sans-serif";
-  ctx.strokeStyle = "rgba(0,0,0,0.5)";
   ctx.strokeText("Flappy Bird", CANVAS_WIDTH / 2, 180);
   ctx.fillStyle = "#FFE135";
   ctx.fillText("Flappy Bird", CANVAS_WIDTH / 2, 180);
@@ -379,7 +373,11 @@ export default function Game() {
   }, []);
 
   const handleCanvasClick = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    (
+      e:
+        | React.MouseEvent<HTMLCanvasElement>
+        | React.TouchEvent<HTMLCanvasElement>
+    ) => {
       if (gameStateRef.current === "gameover") {
         gameStateRef.current = "idle";
         resetGame();
@@ -440,14 +438,20 @@ export default function Game() {
           const minTop = 60;
           const maxTop = CANVAS_HEIGHT - GROUND_HEIGHT - PIPE_GAP - 60;
           const topHeight = minTop + Math.random() * (maxTop - minTop);
-          pipesRef.current.push({ x: CANVAS_WIDTH + 10, topHeight, scored: false });
+          pipesRef.current.push({
+            x: CANVAS_WIDTH + 10,
+            topHeight,
+            scored: false,
+          });
           lastPipeSpawnRef.current = now;
         }
 
         pipesRef.current.forEach((pipe) => {
           pipe.x -= PIPE_SPEED;
         });
-        pipesRef.current = pipesRef.current.filter((p) => p.x > -PIPE_WIDTH - 20);
+        pipesRef.current = pipesRef.current.filter(
+          (p) => p.x > -PIPE_WIDTH - 20
+        );
 
         const groundY = CANVAS_HEIGHT - GROUND_HEIGHT;
         if (bird.y + BIRD_SIZE / 2 >= groundY || bird.y - BIRD_SIZE / 2 <= 0) {
@@ -467,7 +471,10 @@ export default function Game() {
           const pipeRight = pipe.x + PIPE_WIDTH + 5;
 
           if (birdRight > pipeLeft && birdLeft < pipeRight) {
-            if (birdTop < pipe.topHeight || birdBottom > pipe.topHeight + PIPE_GAP) {
+            if (
+              birdTop < pipe.topHeight ||
+              birdBottom > pipe.topHeight + PIPE_GAP
+            ) {
               gameStateRef.current = "gameover";
               if (scoreRef.current > bestScoreRef.current) {
                 bestScoreRef.current = scoreRef.current;
@@ -534,14 +541,12 @@ export default function Game() {
           maxWidth: "100vw",
           maxHeight: "85vh",
           imageRendering: "auto",
-          boxShadow: "0 0 40px rgba(77, 201, 246, 0.2), 0 8px 32px rgba(0,0,0,0.4)",
+          boxShadow:
+            "0 0 40px rgba(77, 201, 246, 0.2), 0 8px 32px rgba(0,0,0,0.4)",
         }}
         data-testid="game-canvas"
       />
-      <p
-        className="mt-4 text-sm text-gray-400"
-        data-testid="text-instructions"
-      >
+      <p className="mt-4 text-sm text-gray-400" data-testid="text-instructions">
         Press Space, tap, or click to flap
       </p>
     </div>
