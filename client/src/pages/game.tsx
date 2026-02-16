@@ -560,6 +560,17 @@ export default function Game() {
       <p className="mt-4 text-sm text-gray-400" data-testid="text-instructions">
         Press Space, tap, or click to flap
       </p>
+      <p className="mt-2 text-xs text-gray-500" data-testid="text-attribution">
+        Created by{" "}
+        <a
+          href="https://mateen-freelancer.vercel.app/"
+          target="_blank"
+          rel="noreferrer"
+          className="font-medium text-gray-300 underline underline-offset-4 decoration-gray-600 transition-colors hover:text-gray-100 hover:decoration-gray-300"
+        >
+          Mateen
+        </a>
+      </p>
     </div>
   );
 }
